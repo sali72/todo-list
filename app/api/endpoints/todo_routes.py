@@ -1,0 +1,49 @@
+from fastapi import APIRouter, Path
+
+from app.api.controllers.todo_controller import TodoController
+from models.schemas import ResponseSchema, TodoSchema
+
+router = APIRouter(prefix="/todo", tags=["TODO"])
+
+
+@router.post("", response_model=ResponseSchema)
+async def create_todo_route(todo_schema: TodoSchema):
+    _id = await TodoController.create_todo(todo_schema)
+
+    message = "Todo task created successfully"
+    data = {"id": _id}
+    return ResponseSchema(data=data, message=message)
+
+
+@router.get("", response_model=ResponseSchema)
+async def get_all_todo_route():
+    todos = await TodoController.get_all_todo()
+
+    message = "All tasks retrieved successfully"
+    return ResponseSchema(data=todos, message=message)
+
+
+@router.get("/{id}", response_model=ResponseSchema)
+async def get_todo_route(id: str):
+    todo = await TodoController.get_one_todo(id)
+
+    message = "Todo task retrieved successfully"
+    return ResponseSchema(data=todo, message=message)
+
+
+@router.put("/{id}", response_model=ResponseSchema)
+async def update_todo_route(id: str, todo_schema: TodoSchema):
+    _id = await TodoController.update_one_todo(id, todo_schema)
+
+    message = "Todo task updated successfully"
+    data = {"id": _id}
+    return ResponseSchema(data=data, message=message)
+
+
+@router.delete("{id}", response_model=ResponseSchema)
+async def create_todo_route(id: str):
+    _id = await TodoController.delete_one_todo(id)
+
+    message = "Todo task deleted successfully"
+    data = {"id": _id}
+    return ResponseSchema(data=data, message=message)

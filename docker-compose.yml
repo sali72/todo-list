@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: todo
+    image: todo-image
+    command: uvicorn app.main:app --reload --host  0.0.0.0 --port  5000
+    build: .
+    volumes:
+      - ./:/app
+    ports:
+      - 7500:5000
+    depends_on:
+      - mongodb
+    networks:
+      - todo-net
+      - nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "4"
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:4.2.3-bionic
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - todo-net
+      - nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "4"
+    env_file:
+      - .env
+
+volumes:
+  mongo-data:
+
+networks:
+  todo-net:
+  nginx:
+    external: true
