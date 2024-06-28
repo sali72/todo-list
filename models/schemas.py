@@ -23,7 +23,7 @@ class ResponseSchema(BaseModelConfigured):
     data: dict = Field(None, example={"id": "666ef095c65d183a71a06935"})
     timestamp: datetime = Field(datetime.now(), example="2024-02-16T14:05:09.252968")
     
-class User(BaseModel):
+class UserSchema(BaseModel):
     username: str = Field(None, title="The task description")
     email: str = Field(None, title="The task description")
     password: str = Field(None, title="The task description")
