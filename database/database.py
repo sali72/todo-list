@@ -1,4 +1,5 @@
 import os
+
 import pymongo
 from dotenv import load_dotenv
 
@@ -18,11 +19,12 @@ else:
     client = pymongo.MongoClient(
         host=MONGO_HOST,
         port=27017,
-        username= MONGO_INITDB_ROOT_USERNAME,
-        password= MONGO_INITDB_ROOT_PASSWORD,
-        authSource= "admin"
+        username=MONGO_INITDB_ROOT_USERNAME,
+        password=MONGO_INITDB_ROOT_PASSWORD,
+        authSource="admin",
     )
     print("Connected to mongoDB")
 
 db = client[MONGO_INITDB_DATABASE]
 todo_collection = db["todo"]
+user_collection = db["user"]
