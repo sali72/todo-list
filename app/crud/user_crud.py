@@ -19,6 +19,9 @@ class UserCRUD:
     async def get_all(self):
         return self.user_collection.find({})
 
+    async def get_one_by_username_optional(self, username: str) -> dict:
+        return self.user_collection.find_one({"username": username})
+    
     @ensure_find_one_found("User")
     async def get_one_by_id(self, _id: ObjectId) -> dict:
         return self.user_collection.find_one({"_id": _id})
@@ -30,7 +33,7 @@ class UserCRUD:
             {
                 "$set": {
                     "username": user_model.username,
-                    "password": user_model.password,
+                    "password": user_model.hashed_password,
                     "email": user_model.email,
                 }
             },

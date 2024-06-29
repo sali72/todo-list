@@ -30,3 +30,7 @@ class UserSchema(BaseModel):
 
     # def verify_password(self, plain_password):
     #     return pwd_context.verify(plain_password, self.hashed_password)
+    
+class Token(BaseModel):
+    access_token: str
+    token_type: str

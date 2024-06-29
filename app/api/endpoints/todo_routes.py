@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Depends
+from app.api.controllers.auth_controller import auth_user
 
 from app.api.controllers.todo_controller import TodoController
 from models.schemas import ResponseSchema, TodoSchema
@@ -7,7 +8,7 @@ router = APIRouter(prefix="/todo", tags=["TODO"])
 
 
 @router.post("", response_model=ResponseSchema)
-async def create_todo_route(todo_schema: TodoSchema):
+async def create_todo_route(todo_schema: TodoSchema, current_user = Depends(auth_user)):
     _id = await TodoController.create_todo(todo_schema)
 
     message = "Todo task created successfully"

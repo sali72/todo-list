@@ -7,7 +7,7 @@ class TodoModel:
         
 class UserModel:
     
-    def __init__(self, username, password, email) -> None:
+    def __init__(self, username, hashed_password, email) -> None:
         self.username = username
-        self.password = password
+        self.hashed_password = hashed_password
         self.email = email
