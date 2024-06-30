@@ -2,6 +2,8 @@ import os
 
 import pymongo
 from dotenv import load_dotenv
+from fastapi import HTTPException
+from pymongo import errors
 
 load_dotenv()
 
@@ -28,3 +30,6 @@ else:
 db = client[MONGO_INITDB_DATABASE]
 todo_collection = db["todo"]
 user_collection = db["user"]
+# make username unique
+user_collection.create_index("username", unique=True)
+user_collection.create_index("email", unique=True)
