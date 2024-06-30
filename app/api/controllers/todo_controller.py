@@ -27,22 +27,26 @@ class TodoController:
         return cls.__pymongo_cursor_to_dict(all_todo_cursor)
 
     @classmethod
-    async def get_one_todo(cls, _id: str) -> dict:
-        objectId = cls.__validate_input_OID(_id)
+    async def get_one_todo(cls, _id: str, user: UserModel) -> dict:
+        task_oid = cls.__validate_input_OID(_id)
+        user_oid = cls.__validate_input_OID(user._id)
 
-        todo_dict = await cls.todo_crud.get_one_by_id(objectId)
+        todo_dict = await cls.todo_crud.get_one_by_task_and_user_id(task_oid, user_oid)
         return cls.__format_dict_id(todo_dict)
 
     @classmethod
-    async def update_one_todo(cls, todo_id: str, todo_schema: TodoSchema) -> str:
-        OID = cls.__validate_input_OID(todo_id)
-        base_todo = await cls.todo_crud.get_one_by_id(OID)
+    async def update_one_todo(
+        cls, todo_id: str, todo_schema: TodoSchema, user: UserModel
+    ) -> str:
+        task_oid = cls.__validate_input_OID(todo_id)
+        user_oid = cls.__validate_input_OID(user._id)
+        base_todo = await cls.todo_crud.get_one_by_task_and_user_id(task_oid, user_oid)
 
         cls.__check_input_for_update(todo_schema, base_todo)
-        
-        todo_model = await cls.__create_todo_model(todo_schema, base_todo["_id"])
 
-        await cls.todo_crud.update_one(OID, todo_model)
+        todo_model = await cls.__create_todo_model(todo_schema, user_oid)
+
+        await cls.todo_crud.update_one(task_oid, todo_model)
         return str(base_todo["_id"])
 
     @classmethod
@@ -53,12 +57,14 @@ class TodoController:
         return todo_id
 
     @classmethod
-    async def __create_todo_model(cls, todo_schema: TodoSchema, user_id: str) -> TodoModel:
+    async def __create_todo_model(
+        cls, todo_schema: TodoSchema, user_id: str
+    ) -> TodoModel:
         return TodoModel(
             description=todo_schema.description,
             due_date=todo_schema.due_date,
             status=todo_schema.status,
-            user_id=user_id
+            user_id=user_id,
         )
 
     @classmethod
@@ -78,9 +84,7 @@ class TodoController:
     @classmethod
     def __pymongo_cursor_to_dict(cls, cursor: CursorType) -> dict:
         list_items = list(cursor)
-        return {
-            str(item["_id"]): cls.__process_dict(item) for item in list_items
-        }
+        return {str(item["_id"]): cls.__process_dict(item) for item in list_items}
 
     @classmethod
     def __format_dict_id(cls, dict: dict) -> dict:

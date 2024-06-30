@@ -1,9 +1,11 @@
 from bson import ObjectId
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
-from commons.exception_handler import (ensure_delete_one_found,
-                                       ensure_find_one_found,
-                                       ensure_update_modified)
+from commons.exception_handler import (
+    ensure_delete_one_found,
+    ensure_find_one_found,
+    ensure_update_modified,
+)
 from database.database import todo_collection
 from models.models import TodoModel
 
@@ -18,13 +20,17 @@ class TodoCRUD:
 
     async def get_all(self):
         return self.todo_collection.find({})
-    
+
     async def get_all_by_user_id(self, user_id: ObjectId):
         return self.todo_collection.find({"user_id": user_id})
 
     @ensure_find_one_found("Task")
     async def get_one_by_id(self, _id: ObjectId) -> dict:
         return self.todo_collection.find_one({"_id": _id})
+
+    @ensure_find_one_found("Task")
+    async def get_one_by_task_and_user_id(self, _id: ObjectId, user_id) -> dict:
+        return self.todo_collection.find_one({"_id": _id, "user_id": user_id})
 
     @ensure_update_modified("Task")
     async def update_one(self, _id: ObjectId, todo_model: TodoModel) -> UpdateResult:
@@ -35,7 +41,6 @@ class TodoCRUD:
                     "description": todo_model.description,
                     "due_date": todo_model.due_date,
                     "status": todo_model.status,
-                    "user_id": todo_model.user_id
                 }
             },
         )
