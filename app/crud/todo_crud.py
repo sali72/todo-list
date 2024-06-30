@@ -2,8 +2,8 @@ from bson import ObjectId
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 from commons.exception_handler import (ensure_delete_one_found,
-                                       ensure_update_modified,
-                                       ensure_find_one_found)
+                                       ensure_find_one_found,
+                                       ensure_update_modified)
 from database.database import todo_collection
 from models.models import TodoModel
 

@@ -2,8 +2,8 @@ from bson import ObjectId
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 from commons.exception_handler import (ensure_delete_one_found,
-                                       ensure_update_modified,
-                                       ensure_find_one_found)
+                                       ensure_find_one_found,
+                                       ensure_update_modified)
 from database.database import user_collection
 from models.models import UserModel
 
@@ -21,7 +21,7 @@ class UserCRUD:
 
     async def get_one_by_username_optional(self, username: str) -> dict:
         return self.user_collection.find_one({"username": username})
-    
+
     @ensure_find_one_found("User")
     async def get_one_by_id(self, _id: ObjectId) -> dict:
         return self.user_collection.find_one({"_id": _id})

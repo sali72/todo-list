@@ -1,15 +1,14 @@
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from datetime import timedelta
-from dotenv import load_dotenv
-import os
 
 from app.api.controllers.auth_controller import AuthController
-from models.schemas import ResponseSchema, UserSchema, Token
+from models.schemas import ResponseSchema, Token, UserSchema
 
 load_dotenv()
 
 router = APIRouter(tags=["Authentication"])
+
 
 @router.post("/register", response_model=ResponseSchema)
 async def create_todo_route(user_schema: UserSchema):
@@ -24,6 +23,8 @@ async def create_todo_route(user_schema: UserSchema):
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Token:
-    access_token = await AuthController.login_user(form_data.username, form_data.password)
-    
+    access_token = await AuthController.login_user(
+        form_data.username, form_data.password
+    )
+
     return Token(access_token=access_token, token_type="bearer")

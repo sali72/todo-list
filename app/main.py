@@ -16,9 +16,9 @@ app.include_router(auth_routes)
 @app.exception_handler(DuplicateKeyError)
 async def duplicate_key_error_handler(request, exc):
     # Extract field name from error message
-    match = re.search(r'index: (\w+)_', str(exc))
+    match = re.search(r"index: (\w+)_", str(exc))
     field_name = match.group(1) if match else "unknown"
-    
+
     return JSONResponse(
         status_code=400,
         content={"error": f"{field_name} already exists."},

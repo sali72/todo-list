@@ -1,15 +1,16 @@
-from bson import ObjectId
-from fastapi import HTTPException, Depends, status
+import os
+import re
+from datetime import datetime, timedelta, timezone
+from typing import Union
+
+import jwt
+from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jwt.exceptions import InvalidTokenError
+from passlib.context import CryptContext
 from pymongo import CursorType
 from pymongo.results import InsertOneResult
-from passlib.context import CryptContext
-from datetime import timedelta, timezone, datetime
-from typing import Union
-import os, re
-from dotenv import load_dotenv
-import jwt
-from jwt.exceptions import InvalidTokenError
 from zxcvbn import zxcvbn
 
 from app.crud.user_crud import UserCRUD
@@ -25,10 +26,10 @@ MINIMUM_PASSWORD_STRENGTH = int(os.getenv("MINIMUM_PASSWORD_STRENGTH"))
 
 
 class AuthController:
-    
+
     user_crud = UserCRUD()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    
+
     @classmethod
     async def login_user(cls, username: str, password: str) -> str:
         user = await cls.authenticate_user(username, password)
@@ -46,15 +47,17 @@ class AuthController:
 
     @classmethod
     async def register_user(cls, user_schema: UserSchema):
-        
+
         # await cls.__check_password_strength(user_schema.password, user_schema.username)
         hashed_password = cls.pwd_context.hash(user_schema.password)
-        
-        user_model = UserModel(username=user_schema.username,
-                  hashed_password=hashed_password,
-                  email=user_schema.email)
+
+        user_model = UserModel(
+            username=user_schema.username,
+            hashed_password=hashed_password,
+            email=user_schema.email,
+        )
         await cls.user_crud.create_one(user_model)
-        
+
         return await cls.login_user(user_schema.username, user_schema.password)
 
     @classmethod
@@ -62,14 +65,14 @@ class AuthController:
         password_policy = await cls.__check_password_policy(password)
         if not password_policy["status"]:
             raise HTTPException(status_code=400, detail=password_policy["message"])
-        
+
         result = zxcvbn(password, user_inputs=[username])
-        if result['score'] < MINIMUM_PASSWORD_STRENGTH:
+        if result["score"] < MINIMUM_PASSWORD_STRENGTH:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f" Your password is not strong enough, {result['feedback']['suggestions']}"
-                )
-    
+                detail=f" Your password is not strong enough, {result['feedback']['suggestions']}",
+            )
+
     @classmethod
     async def __check_password_policy(cls, password: str) -> dict:
         if len(password) < 8:
@@ -106,16 +109,20 @@ class AuthController:
     @classmethod
     async def get_user_by_username(cls, username: str):
         user_dict = await cls.user_crud.get_one_by_username_optional(username)
-        return UserModel(username=user_dict['username'],
-                        hashed_password=user_dict['hashed_password'],
-                        email=user_dict['email'])
+        return UserModel(
+            username=user_dict["username"],
+            hashed_password=user_dict["hashed_password"],
+            email=user_dict["email"],
+        )
 
     @classmethod
     def verify_password(cls, plain_password, hashed_password):
         return cls.pwd_context.verify(plain_password, hashed_password)
 
     @classmethod
-    def create_access_token(cls, data: dict, expires_delta: Union[timedelta, None] = None):
+    def create_access_token(
+        cls, data: dict, expires_delta: Union[timedelta, None] = None
+    ):
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.now(timezone.utc) + expires_delta
@@ -125,7 +132,9 @@ class AuthController:
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 
 async def auth_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -144,7 +153,6 @@ async def auth_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         raise credentials_exception
     return user
-
 
 
 # async def auth_user(current_user: UserSchema = Depends(get_current_user)):

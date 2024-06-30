@@ -8,7 +8,6 @@ from models.models import TodoModel
 from models.schemas import TodoSchema
 
 
-
 class TodoController:
 
     todo_crud = TodoCRUD()
