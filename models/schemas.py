@@ -23,13 +23,10 @@ class ResponseSchema(BaseModelConfigured):
     data: dict = Field(None, example={"id": "666ef095c65d183a71a06935"})
     timestamp: datetime = Field(datetime.now(), example="2024-02-16T14:05:09.252968")
     
-class UserSchema(BaseModel):
+class UserSchema(BaseModelConfigured):
     username: str = Field(None, title="The task description")
     email: str = Field(None, title="The task description")
     password: str = Field(None, title="The task description")
-
-    # def verify_password(self, plain_password):
-    #     return pwd_context.verify(plain_password, self.hashed_password)
     
 class Token(BaseModel):
     access_token: str
