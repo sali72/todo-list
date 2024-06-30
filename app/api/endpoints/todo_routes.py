@@ -44,7 +44,7 @@ async def update_todo_route(id: str, todo_schema: TodoSchema, user=Depends(has_r
 
 @router.delete("{id}", response_model=ResponseSchema)
 async def create_todo_route(id: str, user=Depends(has_role(R.USER))):
-    _id = await TodoController.delete_one_todo(id)
+    _id = await TodoController.delete_one_todo(id, user)
 
     message = "Todo task deleted successfully"
     data = {"id": _id}

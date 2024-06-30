@@ -50,10 +50,11 @@ class TodoController:
         return str(base_todo["_id"])
 
     @classmethod
-    async def delete_one_todo(cls, todo_id: str) -> str:
-        OID = cls.__validate_input_OID(todo_id)
+    async def delete_one_todo(cls, todo_id: str, user: UserModel) -> str:
+        task_oid = cls.__validate_input_OID(todo_id)
+        user_oid = cls.__validate_input_OID(user._id)
 
-        await cls.todo_crud.delete_one(OID)
+        await cls.todo_crud.delete_one_by_task_and_user_id(task_oid, user_oid)
         return todo_id
 
     @classmethod

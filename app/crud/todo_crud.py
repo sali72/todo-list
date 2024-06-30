@@ -29,7 +29,7 @@ class TodoCRUD:
         return self.todo_collection.find_one({"_id": _id})
 
     @ensure_find_one_found("Task")
-    async def get_one_by_task_and_user_id(self, _id: ObjectId, user_id) -> dict:
+    async def get_one_by_task_and_user_id(self, _id: ObjectId, user_id: ObjectId) -> dict:
         return self.todo_collection.find_one({"_id": _id, "user_id": user_id})
 
     @ensure_update_modified("Task")
@@ -48,3 +48,7 @@ class TodoCRUD:
     @ensure_delete_one_found("Task")
     async def delete_one(self, _id: ObjectId) -> DeleteResult:
         return self.todo_collection.delete_one({"_id": _id})
+    
+    @ensure_delete_one_found("Task")
+    async def delete_one_by_task_and_user_id(self, _id: ObjectId, user_id: ObjectId) -> DeleteResult:
+        return self.todo_collection.delete_one({"_id": _id, "user_id": user_id})
