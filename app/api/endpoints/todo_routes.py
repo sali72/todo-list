@@ -19,7 +19,7 @@ async def create_todo_route(todo_schema: TodoSchema, user=Depends(has_role(R.USE
 
 @router.get("", response_model=ResponseSchema)
 async def get_all_todo_route(user=Depends(has_role(R.USER))):
-    todos = await TodoController.get_all_todo()
+    todos = await TodoController.get_all_todo(user)
 
     message = "All tasks retrieved successfully"
     return ResponseSchema(data=todos, message=message)

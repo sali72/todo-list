@@ -21,8 +21,8 @@ class TodoController:
         return str(result.inserted_id)
 
     @classmethod
-    async def get_all_todo(cls) -> dict:
-        all_todo_cursor = await cls.todo_crud.get_all()
+    async def get_all_todo(cls, user: UserModel) -> dict:
+        all_todo_cursor = await cls.todo_crud.get_all_by_user_id(user._id)
 
         return cls.__pymongo_cursor_to_dict(all_todo_cursor)
 

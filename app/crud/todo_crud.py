@@ -18,6 +18,9 @@ class TodoCRUD:
 
     async def get_all(self):
         return self.todo_collection.find({})
+    
+    async def get_all_by_user_id(self, user_id: ObjectId):
+        return self.todo_collection.find({"user_id": user_id})
 
     @ensure_find_one_found("Task")
     async def get_one_by_id(self, _id: ObjectId) -> dict:
