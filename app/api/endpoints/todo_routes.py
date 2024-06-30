@@ -10,7 +10,7 @@ router = APIRouter(prefix="/todo", tags=["TODO"])
 
 @router.post("", response_model=ResponseSchema)
 async def create_todo_route(todo_schema: TodoSchema, user=Depends(has_role(R.USER))):
-    _id = await TodoController.create_todo(todo_schema)
+    _id = await TodoController.create_todo(todo_schema, user)
 
     message = "Todo task created successfully"
     data = {"id": _id}

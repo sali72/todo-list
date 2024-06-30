@@ -4,17 +4,21 @@ from pymongo import CursorType
 from pymongo.results import InsertOneResult
 
 from app.crud.todo_crud import TodoCRUD
-from models.models import TodoModel
+from app.crud.user_crud import UserCRUD
+from models.models import TodoModel, UserModel
 from models.schemas import TodoSchema
 
 
 class TodoController:
 
     todo_crud = TodoCRUD()
+    user_crud = UserCRUD()
 
     @classmethod
-    async def create_todo(cls, todo_schema: TodoSchema) -> str:
-        todo_model = await cls.__create_todo_model(todo_schema)
+    async def create_todo(cls, todo_schema: TodoSchema, user: UserModel) -> str:
+        user_dict = await cls.user_crud.get_one_by_username(user.username)
+        
+        todo_model = await cls.__create_todo_model(todo_schema, user_dict["_id"])
         result: InsertOneResult = await cls.todo_crud.create_todo(todo_model)
         return str(result.inserted_id)
 
@@ -37,8 +41,8 @@ class TodoController:
         base_todo = await cls.todo_crud.get_one_by_id(OID)
 
         cls.__check_input_for_update(todo_schema, base_todo)
-
-        todo_model = await cls.__create_todo_model(todo_schema)
+        
+        todo_model = await cls.__create_todo_model(todo_schema, base_todo["_id"])
 
         await cls.todo_crud.update_one(OID, todo_model)
         return str(base_todo["_id"])
@@ -51,28 +55,38 @@ class TodoController:
         return todo_id
 
     @classmethod
-    async def __create_todo_model(cls, todo_schema: TodoSchema) -> TodoModel:
+    async def __create_todo_model(cls, todo_schema: TodoSchema, user_id: str) -> TodoModel:
         return TodoModel(
             description=todo_schema.description,
             due_date=todo_schema.due_date,
             status=todo_schema.status,
+            user_id=user_id
         )
 
     @classmethod
-    def __remove_id_from_dict(cls, dict: dict) -> dict:
+    def __process_dict(cls, dict: dict) -> dict:
+        cls.user_oid_to_str(dict)
+        return cls.__remove_id_from_dict(dict)
+
+    @classmethod
+    def __remove_id_from_dict(cls, dict):
         dict.pop("_id")
         return dict
+
+    @classmethod
+    def user_oid_to_str(cls, dict):
+        dict["user_id"] = str(dict["user_id"])
 
     @classmethod
     def __pymongo_cursor_to_dict(cls, cursor: CursorType) -> dict:
         list_items = list(cursor)
         return {
-            str(item["_id"]): cls.__remove_id_from_dict(item) for item in list_items
+            str(item["_id"]): cls.__process_dict(item) for item in list_items
         }
 
     @classmethod
     def __format_dict_id(cls, dict: dict) -> dict:
-        return {str(dict["_id"]): cls.__remove_id_from_dict(dict)}
+        return {str(dict["_id"]): cls.__process_dict(dict)}
 
     @classmethod
     def __validate_input_OID(cls, _id: str) -> ObjectId:

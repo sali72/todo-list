@@ -3,10 +3,11 @@ from enum import Enum
 
 class TodoModel:
 
-    def __init__(self, description, due_date, status: bool):
+    def __init__(self, description, due_date, status: bool, user_id):
         self.description = description
         self.due_date = due_date
         self.status = status
+        self.user_id = user_id
 
 
 class Role(Enum):

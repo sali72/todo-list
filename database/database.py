@@ -2,8 +2,6 @@ import os
 
 import pymongo
 from dotenv import load_dotenv
-from fastapi import HTTPException
-from pymongo import errors
 
 load_dotenv()
 

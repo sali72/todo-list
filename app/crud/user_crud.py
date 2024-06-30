@@ -18,6 +18,10 @@ class UserCRUD:
 
     async def get_all(self):
         return self.user_collection.find({})
+    
+    @ensure_find_one_found("User")
+    async def get_one_by_username(self, username: str) -> dict:
+        return self.user_collection.find_one({"username": username})
 
     async def get_one_by_username_optional(self, username: str) -> dict:
         return self.user_collection.find_one({"username": username})

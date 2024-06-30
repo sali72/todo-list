@@ -32,6 +32,7 @@ class TodoCRUD:
                     "description": todo_model.description,
                     "due_date": todo_model.due_date,
                     "status": todo_model.status,
+                    "user_id": todo_model.user_id
                 }
             },
         )
