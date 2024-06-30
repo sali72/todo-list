@@ -14,7 +14,13 @@ class UserCRUD:
         self.user_collection = user_collection
 
     async def create_one(self, user_model: UserModel) -> InsertOneResult:
-        return self.user_collection.insert_one(user_model.__dict__)
+        user_dict = user_model.__dict__
+        self.__remove_id_before_creation(user_dict)
+        return self.user_collection.insert_one(user_dict)
+
+    def __remove_id_before_creation(self, user_dict):
+        if "_id" in user_dict:
+            del user_dict["_id"]
 
     async def get_all(self):
         return self.user_collection.find({})

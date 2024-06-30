@@ -112,7 +112,6 @@ class AuthController:
     @classmethod
     async def get_user_by_username(cls, username: str):
         user_dict = await cls.user_crud.get_one_by_username_optional(username)
-        del user_dict["_id"]
         return UserModel(**user_dict)
 
     @classmethod

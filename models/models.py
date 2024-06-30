@@ -17,7 +17,8 @@ class Role(Enum):
 
 class UserModel:
 
-    def __init__(self, username, hashed_password, email, role: Role) -> None:
+    def __init__(self, username, hashed_password, email, role: Role, _id=None) -> None:
+        self._id = _id
         self.username = username
         self.hashed_password = hashed_password
         self.email = email

@@ -16,9 +16,7 @@ class TodoController:
 
     @classmethod
     async def create_todo(cls, todo_schema: TodoSchema, user: UserModel) -> str:
-        user_dict = await cls.user_crud.get_one_by_username(user.username)
-        
-        todo_model = await cls.__create_todo_model(todo_schema, user_dict["_id"])
+        todo_model = await cls.__create_todo_model(todo_schema, user._id)
         result: InsertOneResult = await cls.todo_crud.create_todo(todo_model)
         return str(result.inserted_id)
 
