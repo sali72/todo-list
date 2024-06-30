@@ -20,7 +20,7 @@ class TodoSchema(BaseModelConfigured):
 class ResponseSchema(BaseModelConfigured):
     message: str = Field(None, example=" task done successfully ")
     status: str = Field("success", example="success")
-    data: dict = Field(None, example={"id": "666ef095c65d183a71a06935"})
+    data: dict = Field(None, example={"data": "Your requested data"})
     timestamp: datetime = Field(datetime.now(), example="2024-02-16T14:05:09.252968")
     
 class UserSchema(BaseModelConfigured):

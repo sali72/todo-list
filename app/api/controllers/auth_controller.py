@@ -6,10 +6,11 @@ from pymongo.results import InsertOneResult
 from passlib.context import CryptContext
 from datetime import timedelta, timezone, datetime
 from typing import Union
-import os
+import os, re
 from dotenv import load_dotenv
 import jwt
 from jwt.exceptions import InvalidTokenError
+from zxcvbn import zxcvbn
 
 from app.crud.user_crud import UserCRUD
 from models.models import UserModel
@@ -20,6 +21,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+MINIMUM_PASSWORD_STRENGTH = int(os.getenv("MINIMUM_PASSWORD_STRENGTH"))
 
 
 class AuthController:
@@ -45,8 +47,52 @@ class AuthController:
     @classmethod
     async def register_user(cls, user_schema: UserSchema):
         
+        # await cls.__check_password_strength(user_schema.password, user_schema.username)
+        hashed_password = cls.pwd_context.hash(user_schema.password)
+        
+        user_model = UserModel(username=user_schema.username,
+                  hashed_password=hashed_password,
+                  email=user_schema.email)
+        await cls.user_crud.create_one(user_model)
         
         return await cls.login_user(user_schema.username, user_schema.password)
+
+    @classmethod
+    async def __check_password_strength(cls, password, username):
+        password_policy = await cls.__check_password_policy(password)
+        if not password_policy["status"]:
+            raise HTTPException(status_code=400, detail=password_policy["message"])
+        
+        result = zxcvbn(password, user_inputs=[username])
+        if result['score'] < MINIMUM_PASSWORD_STRENGTH:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f" Your password is not strong enough, {result['feedback']['suggestions']}"
+                )
+    
+    @classmethod
+    async def __check_password_policy(cls, password: str) -> dict:
+        if len(password) < 8:
+            return {
+                "status": False,
+                "message": "Password must be at least 8 characters long",
+            }
+        if re.search("[0-9]", password) is None:
+            return {
+                "status": False,
+                "message": "Password must contain at least one digit",
+            }
+        if re.search("[A-Z]", password) is None:
+            return {
+                "status": False,
+                "message": "Password must contain at least one uppercase letter",
+            }
+        if re.search("[a-z]", password) is None:
+            return {
+                "status": False,
+                "message": "Password must contain at least one lowercase letter",
+            }
+        return {"status": True, "message": "Password is strong"}
 
     @classmethod
     async def authenticate_user(cls, username: str, password: str):
