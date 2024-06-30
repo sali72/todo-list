@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends
 
-from app.api.controllers.auth_controller import auth_user
+from app.api.controllers.auth_controller import has_role
 from app.api.controllers.todo_controller import TodoController
+from models.models import Role as R
 from models.schemas import ResponseSchema, TodoSchema
 
 router = APIRouter(prefix="/todo", tags=["TODO"])
 
 
 @router.post("", response_model=ResponseSchema)
-async def create_todo_route(todo_schema: TodoSchema, current_user=Depends(auth_user)):
+async def create_todo_route(todo_schema: TodoSchema, user=Depends(has_role(R.USER))):
     _id = await TodoController.create_todo(todo_schema)
 
     message = "Todo task created successfully"
@@ -17,7 +18,7 @@ async def create_todo_route(todo_schema: TodoSchema, current_user=Depends(auth_u
 
 
 @router.get("", response_model=ResponseSchema)
-async def get_all_todo_route():
+async def get_all_todo_route(user=Depends(has_role(R.USER))):
     todos = await TodoController.get_all_todo()
 
     message = "All tasks retrieved successfully"
@@ -25,7 +26,7 @@ async def get_all_todo_route():
 
 
 @router.get("/{id}", response_model=ResponseSchema)
-async def get_todo_route(id: str):
+async def get_todo_route(id: str, user=Depends(has_role(R.USER))):
     todo = await TodoController.get_one_todo(id)
 
     message = "Todo task retrieved successfully"
@@ -33,7 +34,7 @@ async def get_todo_route(id: str):
 
 
 @router.put("/{id}", response_model=ResponseSchema)
-async def update_todo_route(id: str, todo_schema: TodoSchema):
+async def update_todo_route(id: str, todo_schema: TodoSchema, user=Depends(has_role(R.USER))):
     _id = await TodoController.update_one_todo(id, todo_schema)
 
     message = "Todo task updated successfully"
@@ -42,7 +43,7 @@ async def update_todo_route(id: str, todo_schema: TodoSchema):
 
 
 @router.delete("{id}", response_model=ResponseSchema)
-async def create_todo_route(id: str):
+async def create_todo_route(id: str, user=Depends(has_role(R.USER))):
     _id = await TodoController.delete_one_todo(id)
 
     message = "Todo task deleted successfully"

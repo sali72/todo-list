@@ -35,6 +35,7 @@ class UserCRUD:
                     "username": user_model.username,
                     "password": user_model.hashed_password,
                     "email": user_model.email,
+                    "role": user_model.role
                 }
             },
         )

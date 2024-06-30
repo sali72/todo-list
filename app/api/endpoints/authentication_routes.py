@@ -11,7 +11,7 @@ router = APIRouter(tags=["Authentication"])
 
 
 @router.post("/register", response_model=ResponseSchema)
-async def create_todo_route(user_schema: UserSchema):
+async def register(user_schema: UserSchema):
     access_token = await AuthController.register_user(user_schema)
 
     message = "User registered successfully"

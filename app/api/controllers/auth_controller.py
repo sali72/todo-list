@@ -6,15 +6,13 @@ from typing import Union
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
-from pymongo import CursorType
-from pymongo.results import InsertOneResult
 from zxcvbn import zxcvbn
 
 from app.crud.user_crud import UserCRUD
-from models.models import UserModel
+from models.models import Role, UserModel
 from models.schemas import UserSchema
 
 load_dotenv()
@@ -51,14 +49,19 @@ class AuthController:
         # await cls.__check_password_strength(user_schema.password, user_schema.username)
         hashed_password = cls.pwd_context.hash(user_schema.password)
 
-        user_model = UserModel(
-            username=user_schema.username,
-            hashed_password=hashed_password,
-            email=user_schema.email,
-        )
+        user_model = cls.__create_user_model(user_schema, hashed_password)
         await cls.user_crud.create_one(user_model)
 
         return await cls.login_user(user_schema.username, user_schema.password)
+
+    @classmethod
+    def __create_user_model(cls, user_schema, hashed_password):
+        return UserModel(
+            username=user_schema.username,
+            hashed_password=hashed_password,
+            email=user_schema.email,
+            role=Role.USER.value,
+        )
 
     @classmethod
     async def __check_password_strength(cls, password, username):
@@ -109,11 +112,8 @@ class AuthController:
     @classmethod
     async def get_user_by_username(cls, username: str):
         user_dict = await cls.user_crud.get_one_by_username_optional(username)
-        return UserModel(
-            username=user_dict["username"],
-            hashed_password=user_dict["hashed_password"],
-            email=user_dict["email"],
-        )
+        del user_dict["_id"]
+        return UserModel(**user_dict)
 
     @classmethod
     def verify_password(cls, plain_password, hashed_password):
@@ -136,7 +136,7 @@ class AuthController:
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
-async def auth_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -153,6 +153,17 @@ async def auth_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         raise credentials_exception
     return user
+
+
+def has_role(role: Role):
+    def role_verifier(current_user: UserModel = Depends(get_current_user)):
+        if (role.value != current_user.role) and (
+            Role.ADMIN.value != current_user.role
+        ):
+            raise HTTPException(status_code=403, detail="Operation not permitted")
+        return current_user
+
+    return role_verifier
 
 
 # async def auth_user(current_user: UserSchema = Depends(get_current_user)):
