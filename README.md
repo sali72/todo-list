@@ -1,6 +1,6 @@
 # todo-list
 
-**## Task Management System API**
+## Task Management System API
 
 This API provides a simple platform for managing user tasks, adhering to CRUD (Create, Read, Update, Delete) operations. It leverages a JWT (JSON Web Token) system for authentication and authorization, ensuring data integrity and access control.
 
